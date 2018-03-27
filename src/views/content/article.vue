@@ -1,6 +1,6 @@
 <style scoped>
-    @import './article.less';
     @import '../../styles/common.less';
+    @import './article.less';
 </style>
 <template>
     <div>
@@ -52,9 +52,11 @@
                     <Col span="18">
                     <Card>
                         <Form :label-width="80">
-                            <FormItem label="文章标题" :error="articleError" class="font-size-15">
-                                <Input v-model="articleTitle" @on-blur="handleArticletitleBlur" icon="android-list"/>
-                            </FormItem>
+                            <div class="article-title">
+                                <FormItem label="文章标题" :error="articleError">
+                                    <Input v-model="articleTitle" @on-blur="handleArticletitleBlur" icon="android-list"/>
+                                </FormItem>
+                            </div>
                             <div class="article-link-con">
                                 <transition name="fixed-link">
                                     <FormItem v-show="showLink" label="固定链接">
@@ -328,13 +330,13 @@
                         title: '作者',
                         align: 'center',
                         key: 'auth_name',
-                        width: 90
+                        width: 100
                     },
                     {
                         title: '标签',
                         align: 'center',
                         key: 'tag_name',
-                        width: 90
+                        width: 100
                     },
                     {
                         title: '原创',
@@ -358,13 +360,13 @@
                         title: '发布时间',
                         align: 'center',
                         key: 'push_time',
-                        width: 160
+                        width: 180
                     },
                     {
                         title: '操作',
                         align: 'center',
                         key: 'handle',
-                        width: 125,
+                        width: 200,
                         handle: ['delete']
                     }
                 ],
