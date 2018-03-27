@@ -1,5 +1,5 @@
 <style scoped>
-    @import './log.less';
+    @import './tag.less';
 </style>
 <template>
     <div>
@@ -7,6 +7,9 @@
             <Col span="24">
                 <Card style="margin-bottom: 10px">
                     <Form inline>
+                        <FormItem style="margin-bottom: 0">
+                            <Button type="primary" @click="addTag" icon="plus-round">添加标签</Button>
+                        </FormItem>
                         <FormItem style="margin-bottom: 0">
                             <Select v-model="searchConf.type" clearable placeholder="请选择类别" style="width:100px">
                                 <Option :value="1">操作URL</Option>
@@ -38,13 +41,49 @@
                 </Card>
             </Col>
         </Row>
+        <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
+            <p slot="header" style="color:#2d8cf0;">
+                <Icon type="information-circled"></Icon>
+                <span>{{formItem.id ? '编辑' : '新增'}}标签</span>
+            </p>
+            <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
+                <FormItem label="标签名称" prop="tag_name">
+                    <Input v-model="formItem.tag_name" placeholder="请输入标签名称"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="text" @click="cancel" style="margin-right: 8px">取消</Button>
+                <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 <script>
     import axios from 'axios';
-    import expandRow from './table_expand.vue';
+    import expandRow from '../table_expand.vue';
     import util from '../../libs/util';
 
+    const editButton = (vm, h, currentRow, index) => {
+        return h('Button', {
+            props: {
+                type: 'primary'
+            },
+            style: {
+                margin: '0 5px'
+            },
+            on: {
+                'click': () => {
+                    vm.formItem.id = currentRow.id;
+                    vm.formItem.name = currentRow.name;
+                    vm.formItem.fid = currentRow.fid;
+                    vm.formItem.url = currentRow.url.slice(6);
+                    vm.formItem.sort = currentRow.sort;
+                    vm.modalSetting.show = true;
+                    vm.modalSetting.index = index;
+                }
+            }
+        }, '编辑');
+    };
     const deleteButton = (vm, h, currentRow, index) => {
         return h('Poptip', {
             props: {
@@ -84,7 +123,7 @@
     };
 
     export default {
-        name: 'system_user',
+        name: 'tag_list',
         components: { expandRow },
         data () {
             return {
@@ -101,39 +140,21 @@
                         }
                     },
                     {
-                        title: '行为名称',
+                        title: 'id',
                         align: 'center',
-                        key: 'actionName'
-                    },
-                    {
-                        title: '用户ID',
-                        align: 'center',
-                        key: 'uid',
+                        key: 'tag_id',
                         width: 120
                     },
                     {
-                        title: '用户昵称',
+                        title: '标签名',
                         align: 'center',
-                        key: 'nickname',
-                        width: 100
-                    },
-                    {
-                        title: '操作URL',
-                        align: 'center',
-                        key: 'url',
-                        width: 200
-                    },
-                    {
-                        title: '执行时间',
-                        align: 'center',
-                        key: 'addTime',
-                        width: 160
+                        key: 'tag_name',
                     },
                     {
                         title: '操作',
                         align: 'center',
                         key: 'handle',
-                        width: 125,
+                        width: 190,
                         handle: ['delete']
                     }
                 ],
@@ -152,6 +173,15 @@
                     show: false,
                     loading: false,
                     index: 0
+                },
+                formItem: {
+                    tag_id: '',
+                    tag_name: ''
+                },
+                ruleValidate: {
+                    tag_name: [
+                        { required: true, message: '标签名称不能为空', trigger: 'blur' }
+                    ]
                 }
             };
         },
@@ -167,6 +197,7 @@
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
                             return h('div', [
+                                editButton(vm, h, currentRowData, param.index),
                                 deleteButton(vm, h, currentRowData, param.index)
                             ]);
                         };
@@ -216,6 +247,43 @@
                         }
                     }
                 });
+            },
+            doCancel (data) {
+                if (!data) {
+                    this.formItem.id = 0;
+                    this.$refs['myForm'].resetFields();
+                    this.modalSetting.loading = false;
+                    this.modalSetting.index = 0;
+                }
+            },
+            addTag () {
+                this.modalSetting.show = true;
+            },
+            submit () {
+                let self = this;
+                this.$refs['myForm'].validate((valid) => {
+                    if (valid) {
+                        self.modalSetting.loading = true;
+                        let target = '';
+                        if (this.formItem.id === 0) {
+                            target = 'User/add1111';
+                        } else {
+                            target = 'User/edit';
+                        }
+                        axios.post(target, this.formItem).then(function (response) {
+                            if (response.data.code === 1) {
+                                self.$Message.success(response.data.msg);
+                            } else {
+                                self.$Message.error(response.data.msg);
+                            }
+                            self.getList();
+                            self.cancel();
+                        });
+                    }
+                });
+            },
+            cancel () {
+                this.modalSetting.show = false;
             }
         }
     };

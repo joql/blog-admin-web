@@ -191,10 +191,10 @@
                     </Col>
                 </Row>
             </div>
-            <!--<div slot="footer">
+            <div slot="footer">
                 <Button type="text" @click="cancel" style="margin-right: 8px">取消</Button>
                 <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
-            </div>-->
+            </div>
         </Modal>
     </div>
 </template>
@@ -264,7 +264,7 @@
     };
 
     export default {
-        name: 'system_user',
+        name: 'article',
         components: { expandRow },
         data () {
             return {
@@ -476,6 +476,32 @@
                     this.modalSetting.loading = false;
                     this.modalSetting.index = 0;
                 }
+            },
+            submit () {
+                let self = this;
+                this.$refs['myForm'].validate((valid) => {
+                    if (valid) {
+                        self.modalSetting.loading = true;
+                        let target = '';
+                        if (this.formItem.id === 0) {
+                            target = 'User/add1111';
+                        } else {
+                            target = 'User/edit';
+                        }
+                        axios.post(target, this.formItem).then(function (response) {
+                            if (response.data.code === 1) {
+                                self.$Message.success(response.data.msg);
+                            } else {
+                                self.$Message.error(response.data.msg);
+                            }
+                            self.getList();
+                            self.cancel();
+                        });
+                    }
+                });
+            },
+            cancel () {
+                this.modalSetting.show = false;
             },
             // 编辑文章模态框
             handleArticletitleBlur () {

@@ -174,7 +174,7 @@ export const appRouter = [
                 icon: 'ios-people',
                 name: 'tag',
                 access: 'admin/User/index',
-                title: '标签管理',
+                title: '标签',
                 component: () => import('@/views/content/tag.vue')
             }
         ]
