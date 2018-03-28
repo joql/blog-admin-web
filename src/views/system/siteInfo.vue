@@ -8,7 +8,7 @@
             <Card>
                 <Tabs type="card">
                     <TabPane label="基础信息" icon="android-create">
-                    <Col span="12">
+                    <Col span="16">
                         <Form ref="myForm" :model="formItem" :rules="ruleValidate" :label-width="160">
                             <FormItem label="网站状态" prop="gender">
                                 <RadioGroup v-model="formItem.gender">
@@ -26,15 +26,158 @@
                                 <Input v-model="formItem.name" placeholder="test@test.com"></Input>
                             </FormItem>
                             <FormItem>
-                                <Button type="primary" @click="submit" >提交</Button>
+                                <Button type="primary" @click="submit_base_set" >提交</Button>
                             </FormItem>
                         </Form>
                     </Col>
                     </TabPane>
-                    <TabPane label="优化推广" icon="share">优化推广</TabPane>
-                    <TabPane label="文章水印" icon="image">文章水印</TabPane>
-                    <TabPane label="邮箱设置" icon="at">邮箱设置</TabPane>
-                    <TabPane label="评论设置" icon="chatbubble-working">评论设置</TabPane>
+                    <TabPane label="优化推广" icon="share">
+                        <Col span="16">
+                        <Form ref="myForm" :model="formItem" :rules="ruleValidate" :label-width="160">
+                            <FormItem label="网站名" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="网站关键字" prop="name">
+                                <Input v-model="formItem.name" type="textarea"></Input>
+                            </FormItem>
+                            <FormItem label="网站描述" prop="name">
+                                <Input v-model="formItem.name" type="textarea"></Input>
+                            </FormItem>
+                            <FormItem label="默认作者" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文章保留版权提示" prop="name">
+                                <Input v-model="formItem.name" type="textarea"></Input>
+                            </FormItem>
+                            <FormItem label="文章图片title和alt内容" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem>
+                                <Button type="primary" @click="submit_base_set" >提交</Button>
+                            </FormItem>
+                        </Form>
+                        </Col>
+                    </TabPane>
+                    <TabPane label="文章水印" icon="image">
+                        <Col span="16">
+                        <Form ref="myForm" :model="formItem" :rules="ruleValidate" :label-width="160">
+                            <FormItem label="水印类型" prop="gender">
+                                <RadioGroup v-model="formItem.gender">
+                                    <Radio label="male">文字水印</Radio>
+                                    <Radio label="female">图片水印</Radio>
+                                    <Radio label="female">关闭水印</Radio>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="文字水印内容" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文字水印字体路径" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文字水印文字字号" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文字水印文字颜色" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文字水印文字倾斜程度" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="文字水印位置" prop="gender">
+                                <RadioGroup v-model="formItem.gender">
+                                    <Col>
+                                    <Radio label="txt-top-left">上左</Radio>
+                                    <Radio label="txt-top-center">上中</Radio>
+                                    <Radio label="txt-top-right">上右</Radio>
+                                    </Col>
+                                    <Col>
+                                    <Radio label="txt-center-left">中左</Radio>
+                                    <Radio label="txt-center-center">中中</Radio>
+                                    <Radio label="txt-center-right">中右</Radio>
+                                    </Col>
+                                    <Col>
+                                    <Radio label="txt-bottom-left">下左</Radio>
+                                    <Radio label="txt-bottom-center">下中</Radio>
+                                    <Radio label="txt-bottom-right">下右</Radio>
+                                    </Col>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="图片水印来源路径" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="图片水印位置" prop="gender">
+                                <RadioGroup v-model="formItem.gender">
+                                    <Col>
+                                    <Radio label="pic-top-left">上左</Radio>
+                                    <Radio label="pic-top-center">上中</Radio>
+                                    <Radio label="pic-top-right">上右</Radio>
+                                    </Col>
+                                    <Col>
+                                    <Radio label="pic-center-left">中左</Radio>
+                                    <Radio label="pic-center-center">中中</Radio>
+                                    <Radio label="pic-center-right">中右</Radio>
+                                    </Col>
+                                    <Col>
+                                    <Radio label="pic-bottom-left">下左</Radio>
+                                    <Radio label="pic-bottom-center">下中</Radio>
+                                    <Radio label="pic-bottom-right">下右</Radio>
+                                    </Col>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="图片水印透明度" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem>
+                                <Button type="primary" @click="submit_base_set" >提交</Button>
+                            </FormItem>
+                        </Form>
+                        </Col>
+                    </TabPane>
+                    <TabPane label="邮箱设置" icon="at">
+                        <Col span="16">
+                        <Form ref="myForm" :model="formItem" :rules="ruleValidate" :label-width="160">
+                            <FormItem label="SMTP服务器" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem label="邮箱账号" prop="name">
+                                <Input v-model="formItem.name" type="textarea"></Input>
+                            </FormItem>
+                            <FormItem label="邮箱密码" prop="name">
+                                <Input v-model="formItem.name" type="textarea"></Input>
+                            </FormItem>
+                            <FormItem label="发件人名称" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem>
+                                <Button type="primary" @click="submit_base_set" >提交</Button>
+                            </FormItem>
+                        </Form>
+                        </Col>
+                    </TabPane>
+                    <TabPane label="评论设置" icon="chatbubble-working">
+                        <Col span="16">
+                        <Form ref="myForm" :model="formItem" :rules="ruleValidate" :label-width="160">
+                            <FormItem label="开启评论审核" prop="gender">
+                                <RadioGroup v-model="formItem.gender">
+                                    <Radio label="male">开启</Radio>
+                                    <Radio label="female">关闭</Radio>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="发送被评论邮件" prop="gender">
+                                <RadioGroup v-model="formItem.gender">
+                                    <Radio label="male">开启</Radio>
+                                    <Radio label="female">关闭</Radio>
+                                </RadioGroup>
+                            </FormItem>
+                            <FormItem label="接收评论通知邮箱" prop="name">
+                                <Input v-model="formItem.name"></Input>
+                            </FormItem>
+                            <FormItem>
+                                <Button type="primary" @click="submit_base_set" >提交</Button>
+                            </FormItem>
+                        </Form>
+                        </Col>
+                    </TabPane>
                 </Tabs>
             </Card>
             </Col>
