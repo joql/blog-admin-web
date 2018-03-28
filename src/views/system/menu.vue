@@ -201,7 +201,7 @@
                                     value: currentRowData.hide
                                 },
                                 on: {
-                                    'on-change' : function (status) {
+                                    'on-change': function (status) {
                                         axios.get('Menu/changeStatus', {
                                             params: {
                                                 status: status,

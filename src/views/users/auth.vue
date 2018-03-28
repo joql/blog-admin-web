@@ -383,7 +383,7 @@
                                     value: currentRowData.status
                                 },
                                 on: {
-                                    'on-change' : function (status) {
+                                    'on-change': function (status) {
                                         axios.get('Auth/changeStatus', {
                                             params: {
                                                 status: status,

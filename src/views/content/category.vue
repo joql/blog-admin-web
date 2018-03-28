@@ -1,50 +1,78 @@
-<style scoped>
-    @import './log.less';
+<style lang="less" scoped>
+    @import './category.less';
 </style>
+
 <template>
     <div>
         <Row>
             <Col span="24">
-                <Card style="margin-bottom: 10px">
-                    <Form inline>
-                        <FormItem style="margin-bottom: 0">
-                            <Select v-model="searchConf.type" clearable placeholder="请选择类别" style="width:100px">
-                                <Option :value="1">操作URL</Option>
-                                <Option :value="2">用户昵称</Option>
-                                <Option :value="3">用户ID</Option>
-                            </Select>
-                        </FormItem>
-                        <FormItem style="margin-bottom: 0">
-                            <Input v-model="searchConf.keywords" placeholder=""></Input>
-                        </FormItem>
-                        <FormItem style="margin-bottom: 0">
-                            <Button type="primary" @click="search">查询/刷新</Button>
-                        </FormItem>
-                    </Form>
-                </Card>
+            <Card>
+                <p slot="title" style="height: 32px">
+                    <Button type="primary" @click="alertAdd" icon="plus-round">新增</Button>
+                </p>
+                <div>
+                    <Table :columns="columnsList" :data="tableData" border disabled-hover></Table>
+                </div>
+            </Card>
             </Col>
         </Row>
-        <Row>
-            <Col span="24">
-                <Card>
-                    <div>
-                        <Table :columns="columnsList" :data="tableData" border disabled-hover></Table>
-                    </div>
-                    <div class="margin-top-15" style="text-align: center">
-                        <Page :total="tableShow.listCount" :current="tableShow.currentPage"
-                              :page-size="tableShow.pageSize" @on-change="changePage"
-                              @on-page-size-change="changeSize" show-elevator show-sizer show-total></Page>
-                    </div>
-                </Card>
-            </Col>
-        </Row>
+        <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
+            <p slot="header" style="color:#2d8cf0;">
+                <Icon type="information-circled"></Icon>
+                <span>{{formItem.id ? '编辑' : '新增'}}分类</span>
+            </p>
+            <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
+                <FormItem label="分类名称" prop="name">
+                    <Input v-model="formItem.name" placeholder="请输入分类名称"></Input>
+                </FormItem>
+                <FormItem label="父级栏目" prop="fid">
+                    <Select v-model="formItem.fid" filterable>
+                        <Option :value="0">顶级栏目</Option>
+                        <Option v-for="item in tableData" :value="item.id" :key="item.id">{{ item.showName }}</Option>
+                    </Select>
+                </FormItem>
+                <FormItem label="菜单排序" prop="sort">
+                    <InputNumber :min="0" v-model="formItem.sort"></InputNumber>
+                    <Badge count="数字越小越靠前" style="margin-left:5px"></Badge>
+                </FormItem>
+                <FormItem label="关键词" prop="key">
+                    <Input v-model="formItem.key"></Input>
+                </FormItem>
+                <FormItem label="描述" prop="desc">
+                    <Input v-model="formItem.desc" type="textarea"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="text" @click="cancel" style="margin-right: 8px">取消</Button>
+                <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
+            </div>
+        </Modal>
     </div>
 </template>
+
 <script>
     import axios from 'axios';
-    import expandRow from './table_expand.vue';
-    import util from '../../libs/util';
-
+    const editButton = (vm, h, currentRow, index) => {
+        return h('Button', {
+            props: {
+                type: 'primary'
+            },
+            style: {
+                margin: '0 5px'
+            },
+            on: {
+                'click': () => {
+                    vm.formItem.id = currentRow.id;
+                    vm.formItem.name = currentRow.name;
+                    vm.formItem.fid = currentRow.fid;
+                    vm.formItem.url = currentRow.url.slice(6);
+                    vm.formItem.sort = currentRow.sort;
+                    vm.modalSetting.show = true;
+                    vm.modalSetting.index = index;
+                }
+            }
+        }, '编辑');
+    };
     const deleteButton = (vm, h, currentRow, index) => {
         return h('Poptip', {
             props: {
@@ -54,7 +82,7 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('Log/del', {
+                    axios.get('Menu/del', {
                         params: {
                             id: currentRow.id
                         }
@@ -82,76 +110,65 @@
             }, '删除')
         ]);
     };
-
     export default {
-        name: 'system_user',
-        components: { expandRow },
+        name: 'system_menu',
         data () {
             return {
                 columnsList: [
                     {
-                        type: 'expand',
-                        width: 50,
-                        render: (h, params) => {
-                            return h(expandRow, {
-                                props: {
-                                    row: params.row
-                                }
-                            });
-                        }
+                        title: 'ID',
+                        key: 'category_id',
+                        width: 65,
+                        align: 'center'
                     },
                     {
-                        title: '行为名称',
-                        align: 'center',
-                        key: 'actionName'
+                        title: '排序',
+                        align: 'left',
+                        key: 'sort',
+                        width: 80
                     },
                     {
-                        title: '用户ID',
+                        title: '分类名',
                         align: 'center',
-                        key: 'uid',
-                        width: 120
+                        key: 'category_name'
                     },
                     {
-                        title: '用户昵称',
-                        align: 'center',
-                        key: 'nickname',
-                        width: 100
-                    },
-                    {
-                        title: '操作URL',
-                        align: 'center',
-                        key: 'url',
+                        title: '关键词',
+                        align: 'left',
+                        key: 'category_key',
                         width: 200
                     },
                     {
-                        title: '执行时间',
+                        title: '描述',
                         align: 'center',
-                        key: 'addTime',
-                        width: 160
+                        key: 'category_desc',
+                        width: 100
                     },
                     {
                         title: '操作',
                         align: 'center',
                         key: 'handle',
-                        width: 125,
-                        handle: ['delete']
+                        width: 200,
+                        handle: ['edit', 'delete']
                     }
                 ],
                 tableData: [],
-                tableShow: {
-                    currentPage: 1,
-                    pageSize: 10,
-                    listCount: 0
-                },
-                searchConf: {
-                    type: '',
-                    keywords: '',
-                    status: ''
-                },
                 modalSetting: {
                     show: false,
                     loading: false,
                     index: 0
+                },
+                formItem: {
+                    name: '',
+                    fid: 0,
+                    url: '',
+                    sort: 0,
+                    id: 0
+                },
+                ruleValidate: {
+                    name: [
+                        { required: true, message: '分类名称不能为空', trigger: 'blur' }
+                    ]
                 }
             };
         },
@@ -167,44 +184,104 @@
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
                             return h('div', [
+                                editButton(vm, h, currentRowData, param.index),
                                 deleteButton(vm, h, currentRowData, param.index)
                             ]);
                         };
                     }
-                    if (item.key === 'addTime') {
+                    if (item.key === 'hide') {
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
-                            return util.formatDate(currentRowData.addTime, 'yyyy-MM-dd hh:mm:ss');
+                            return h('i-switch', {
+                                attrs: {
+                                    size: 'large'
+                                },
+                                props: {
+                                    'true-value': 1,
+                                    'false-value': 0,
+                                    value: currentRowData.hide
+                                },
+                                on: {
+                                    'on-change': function (status) {
+                                        axios.get('Menu/changeStatus', {
+                                            params: {
+                                                status: status,
+                                                id: currentRowData.id
+                                            }
+                                        }).then(function (response) {
+                                            let res = response.data;
+                                            if (res.code === 1) {
+                                                vm.$Message.success(res.msg);
+                                            } else {
+                                                if (res.code === -14) {
+                                                    vm.$store.commit('logout', vm);
+                                                    vm.$router.push({
+                                                        name: 'login'
+                                                    });
+                                                } else {
+                                                    vm.$Message.error(res.msg);
+                                                    vm.getList();
+                                                }
+                                            }
+                                            vm.cancel();
+                                        });
+                                    }
+                                }
+                            }, [
+                                h('span', {
+                                    slot: 'open'
+                                }, '隐藏'),
+                                h('span', {
+                                    slot: 'close'
+                                }, '显示')
+                            ]);
                         };
                     }
                 });
             },
-            changePage (page) {
-                this.tableShow.currentPage = page;
-                this.getList();
+            alertAdd () {
+                this.modalSetting.show = true;
             },
-            changeSize (size) {
-                this.tableShow.pageSize = size;
-                this.getList();
+            submit () {
+                let self = this;
+                this.$refs['myForm'].validate((valid) => {
+                    if (valid) {
+                        self.modalSetting.loading = true;
+                        let target = '';
+                        if (this.formItem.id === 0) {
+                            target = 'Menu/add';
+                        } else {
+                            target = 'Menu/edit';
+                        }
+                        axios.post(target, this.formItem).then(function (response) {
+                            if (response.data.code === 1) {
+                                self.$Message.success(response.data.msg);
+                            } else {
+                                self.$Message.error(response.data.msg);
+                            }
+                            self.getList();
+                            self.cancel();
+                        });
+                    }
+                });
             },
-            search () {
-                this.tableShow.currentPage = 1;
-                this.getList();
+            cancel () {
+                this.modalSetting.show = false;
+            },
+            doCancel (data) {
+                if (!data) {
+                    this.formItem.id = 0;
+                    this.$refs['myForm'].resetFields();
+                    this.modalSetting.loading = false;
+                    this.modalSetting.index = 0;
+                }
             },
             getList () {
                 let vm = this;
-                axios.get('Log/index', {
-                    params: {
-                        page: vm.tableShow.currentPage,
-                        size: vm.tableShow.pageSize,
-                        type: vm.searchConf.type,
-                        keywords: vm.searchConf.keywords
-                    }
-                }).then(function (response) {
+                axios.get('Menu/index').then(function (response) {
                     let res = response.data;
                     if (res.code === 1) {
                         vm.tableData = res.data.list;
-                        vm.tableShow.listCount = res.data.count;
                     } else {
                         if (res.code === -14) {
                             vm.$store.commit('logout', vm);

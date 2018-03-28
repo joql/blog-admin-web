@@ -41,7 +41,7 @@
                 </Card>
             </Col>
         </Row>
-        <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
+        <Modal v-model="modalSetting.show" width="668" :styles="{top: '130px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="information-circled"></Icon>
                 <span>{{formItem.id ? '编辑' : '新增'}}标签</span>
@@ -148,7 +148,7 @@
                     {
                         title: '标签名',
                         align: 'center',
-                        key: 'tag_name',
+                        key: 'tag_name'
                     },
                     {
                         title: '操作',
