@@ -199,6 +199,7 @@
     </div>
 </template>
 <script>
+    import config from '../../../build/config';
     import axios from 'axios';
     import expandRow from '../table_expand.vue';
     import util from '../../libs/util';
@@ -264,7 +265,7 @@
     };
 
     export default {
-        name: 'article',
+        name: 'articl',
         components: { expandRow },
         data () {
             return {
@@ -442,7 +443,7 @@
             },
             getList () {
                 let vm = this;
-                axios.get('Log/index', {
+                axios.get(config.blogUrl + '5ac235ee9a88a', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
