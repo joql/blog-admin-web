@@ -199,7 +199,6 @@
     </div>
 </template>
 <script>
-    import config from '../../../build/config';
     import axios from 'axios';
     import expandRow from '../table_expand.vue';
     import util from '../../libs/util';
@@ -300,21 +299,10 @@
                 // 文章列表
                 columnsList: [
                     {
-                        type: 'expand',
-                        width: 50,
-                        render: (h, params) => {
-                            return h(expandRow, {
-                                props: {
-                                    row: params.row
-                                }
-                            });
-                        }
-                    },
-                    {
                         title: 'ID',
                         align: 'center',
                         key: 'aid',
-                        width: 50
+                        width: 70
                     },
                     {
                         title: '栏目',
@@ -421,10 +409,10 @@
                             ]);
                         };
                     }
-                    if (item.key === 'addTime') {
+                    if (item.key === 'push_time') {
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
-                            return util.formatDate(currentRowData.addTime, 'yyyy-MM-dd hh:mm:ss');
+                            return util.formatDate(currentRowData.push_time, 'yyyy-MM-dd hh:mm:ss');
                         };
                     }
                 });
@@ -443,7 +431,7 @@
             },
             getList () {
                 let vm = this;
-                axios.get(config.blogUrl + '5ac235ee9a88a', {
+                axios.get('Article/lists', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
