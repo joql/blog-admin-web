@@ -45,7 +45,7 @@
         <Modal v-model="modalSetting.show" width="1350" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="information-circled"></Icon>
-                <span>{{formItem.id ? '编辑' : '新增'}}文章</span>
+                <span>{{formItem.aid ? '编辑' : '新增'}}文章</span>
             </p>
             <div>
                 <Row>
@@ -214,10 +214,10 @@
             },
             on: {
                 'click': () => {
-                    vm.formItem.id = currentRow.id;
-                    vm.formItem.name = currentRow.name;
+                    vm.formItem.aid = currentRow.aid;
+                    vm.formItem.article_title = currentRow.article_title;
                     vm.formItem.fid = currentRow.fid;
-                    vm.formItem.url = currentRow.url.slice(6);
+                    //vm.formItem.url = currentRow.url.slice(6);
                     vm.formItem.sort = currentRow.sort;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
@@ -331,19 +331,19 @@
                         title: '原创',
                         align: 'center',
                         key: 'is_origin',
-                        width: 50
+                        width: 90
                     },
                     {
                         title: '显示',
                         align: 'center',
                         key: 'is_show',
-                        width: 50
+                        width: 90
                     },
                     {
                         title: '置顶',
                         align: 'center',
                         key: 'is_top',
-                        width: 50
+                        width: 90
                     },
                     {
                         title: '发布时间',
@@ -413,6 +413,147 @@
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
                             return util.formatDate(currentRowData.push_time, 'yyyy-MM-dd hh:mm:ss');
+                        };
+                    }
+                    if (item.key === 'is_origin') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            return h('i-switch', {
+                                attrs: {
+                                },
+                                props: {
+                                    'true-value': 1,
+                                    'false-value': 0,
+                                    value: currentRowData.is_origin
+                                },
+                                on: {
+                                    'on-change': function (status) {
+                                        axios.get('Article/changeOriginState', {
+                                            params: {
+                                                status: status,
+                                                id: currentRowData.aid
+                                            }
+                                        }).then(function (response) {
+                                            let res = response.data;
+                                            if (res.code === 1) {
+                                                vm.$Message.success(res.msg);
+                                            } else {
+                                                if (res.code === -14) {
+                                                    vm.$store.commit('logout', vm);
+                                                    vm.$router.push({
+                                                        name: 'login'
+                                                    });
+                                                } else {
+                                                    vm.$Message.error(res.msg);
+                                                    vm.getList();
+                                                }
+                                            }
+                                            vm.cancel();
+                                        });
+                                    }
+                                }
+                            }, [
+                                h('span', {
+                                    slot: 'open'
+                                }, 'on'),
+                                h('span', {
+                                    slot: 'close'
+                                }, 'off')
+                            ]);
+                        };
+                    }
+                    if (item.key === 'is_show') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            return h('i-switch', {
+                                attrs: {
+                                },
+                                props: {
+                                    'true-value': 1,
+                                    'false-value': 0,
+                                    value: currentRowData.is_show
+                                },
+                                on: {
+                                    'on-change': function (status) {
+                                        axios.get('Article/changeShowState', {
+                                            params: {
+                                                status: status,
+                                                id: currentRowData.aid
+                                            }
+                                        }).then(function (response) {
+                                            let res = response.data;
+                                            if (res.code === 1) {
+                                                vm.$Message.success(res.msg);
+                                            } else {
+                                                if (res.code === -14) {
+                                                    vm.$store.commit('logout', vm);
+                                                    vm.$router.push({
+                                                        name: 'login'
+                                                    });
+                                                } else {
+                                                    vm.$Message.error(res.msg);
+                                                    vm.getList();
+                                                }
+                                            }
+                                            vm.cancel();
+                                        });
+                                    }
+                                }
+                            }, [
+                                h('span', {
+                                    slot: 'open'
+                                }, 'on'),
+                                h('span', {
+                                    slot: 'close'
+                                }, 'off')
+                            ]);
+                        };
+                    }
+                    if (item.key === 'is_top') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            return h('i-switch', {
+                                attrs: {
+                                },
+                                props: {
+                                    'true-value': 1,
+                                    'false-value': 0,
+                                    value: currentRowData.is_top
+                                },
+                                on: {
+                                    'on-change': function (status) {
+                                        axios.get('Article/changeTopState', {
+                                            params: {
+                                                status: status,
+                                                id: currentRowData.aid
+                                            }
+                                        }).then(function (response) {
+                                            let res = response.data;
+                                            if (res.code === 1) {
+                                                vm.$Message.success(res.msg);
+                                            } else {
+                                                if (res.code === -14) {
+                                                    vm.$store.commit('logout', vm);
+                                                    vm.$router.push({
+                                                        name: 'login'
+                                                    });
+                                                } else {
+                                                    vm.$Message.error(res.msg);
+                                                    vm.getList();
+                                                }
+                                            }
+                                            vm.cancel();
+                                        });
+                                    }
+                                }
+                            }, [
+                                h('span', {
+                                    slot: 'open'
+                                }, 'on'),
+                                h('span', {
+                                    slot: 'close'
+                                }, 'off')
+                            ]);
                         };
                     }
                 });
