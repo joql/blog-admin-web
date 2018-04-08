@@ -28,7 +28,7 @@
                 <FormItem label="父级栏目" prop="fid">
                     <Select v-model="formItem.fid" filterable>
                         <Option :value="0">顶级栏目</Option>
-                        <Option v-for="item in tableData" :value="item.id" :key="item.id">{{ item.showName }}</Option>
+                        <Option v-for="item in tableData" :value="item.category_id" :key="item.category_id">{{ item.showName }}</Option>
                     </Select>
                 </FormItem>
                 <FormItem label="菜单排序" prop="sort">
@@ -36,7 +36,7 @@
                     <Badge count="数字越小越靠前" style="margin-left:5px"></Badge>
                 </FormItem>
                 <FormItem label="关键词" prop="key">
-                    <Input v-model="formItem.key"></Input>
+                    <Input v-model="formItem.keyw"></Input>
                 </FormItem>
                 <FormItem label="描述" prop="desc">
                     <Input v-model="formItem.desc" type="textarea"></Input>
@@ -62,11 +62,12 @@
             },
             on: {
                 'click': () => {
-                    vm.formItem.id = currentRow.id;
-                    vm.formItem.name = currentRow.name;
-                    vm.formItem.fid = currentRow.fid;
-                    vm.formItem.url = currentRow.url.slice(6);
-                    vm.formItem.sort = currentRow.sort;
+                    vm.formItem.id = currentRow.category_id;
+                    vm.formItem.name = currentRow.category_name;
+                    vm.formItem.fid = currentRow.pid;
+                    vm.formItem.sort = currentRow.showSort;
+                    vm.formItem.keyw = currentRow.category_key;
+                    vm.formItem.desc = currentRow.category_desc;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
                 }
@@ -82,9 +83,9 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('Menu/del', {
+                    axios.get('ArticleDir/del', {
                         params: {
-                            id: currentRow.id
+                            id: currentRow.category_id
                         }
                     }).then(function (response) {
                         currentRow.loading = false;
@@ -124,13 +125,13 @@
                     {
                         title: '排序',
                         align: 'left',
-                        key: 'sort',
+                        key: 'showSort',
                         width: 80
                     },
                     {
                         title: '分类名',
-                        align: 'center',
-                        key: 'category_name'
+                        align: 'left',
+                        key: 'showName'
                     },
                     {
                         title: '关键词',
@@ -159,11 +160,12 @@
                     index: 0
                 },
                 formItem: {
+                    id: '',
                     name: '',
                     fid: 0,
-                    url: '',
                     sort: 0,
-                    id: 0
+                    keyw: '',
+                    desc: ''
                 },
                 ruleValidate: {
                     name: [
@@ -240,6 +242,12 @@
                 });
             },
             alertAdd () {
+                let vm = this;
+                vm.formItem.id = '';
+                vm.formItem.name = '';
+                vm.formItem.sort = 0;
+                vm.formItem.keyw = '';
+                vm.formItem.desc = '';
                 this.modalSetting.show = true;
             },
             submit () {
@@ -247,13 +255,7 @@
                 this.$refs['myForm'].validate((valid) => {
                     if (valid) {
                         self.modalSetting.loading = true;
-                        let target = '';
-                        if (this.formItem.id === 0) {
-                            target = 'Menu/add';
-                        } else {
-                            target = 'Menu/edit';
-                        }
-                        axios.post(target, this.formItem).then(function (response) {
+                        axios.post('ArticleDir/push', this.formItem).then(function (response) {
                             if (response.data.code === 1) {
                                 self.$Message.success(response.data.msg);
                             } else {
@@ -278,7 +280,7 @@
             },
             getList () {
                 let vm = this;
-                axios.get('Menu/index').then(function (response) {
+                axios.get('ArticleDir/lists').then(function (response) {
                     let res = response.data;
                     if (res.code === 1) {
                         vm.tableData = res.data.list;

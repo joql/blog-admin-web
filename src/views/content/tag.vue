@@ -11,14 +11,7 @@
                             <Button type="primary" @click="addTag" icon="plus-round">添加标签</Button>
                         </FormItem>
                         <FormItem style="margin-bottom: 0">
-                            <Select v-model="searchConf.type" clearable placeholder="请选择类别" style="width:100px">
-                                <Option :value="1">操作URL</Option>
-                                <Option :value="2">用户昵称</Option>
-                                <Option :value="3">用户ID</Option>
-                            </Select>
-                        </FormItem>
-                        <FormItem style="margin-bottom: 0">
-                            <Input v-model="searchConf.keywords" placeholder=""></Input>
+                            <Input v-model="searchConf.keywords" placeholder="标签名"></Input>
                         </FormItem>
                         <FormItem style="margin-bottom: 0">
                             <Button type="primary" @click="search">查询/刷新</Button>
@@ -129,26 +122,15 @@
             return {
                 columnsList: [
                     {
-                        type: 'expand',
-                        width: 50,
-                        render: (h, params) => {
-                            return h(expandRow, {
-                                props: {
-                                    row: params.row
-                                }
-                            });
-                        }
-                    },
-                    {
                         title: 'id',
                         align: 'center',
-                        key: 'tag_id',
+                        key: 'tid',
                         width: 120
                     },
                     {
                         title: '标签名',
                         align: 'center',
-                        key: 'tag_name'
+                        key: 'value'
                     },
                     {
                         title: '操作',
@@ -224,7 +206,7 @@
             },
             getList () {
                 let vm = this;
-                axios.get('Log/index', {
+                axios.get('Tag/lists', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,

@@ -31,8 +31,8 @@
         <Row>
             <Col span="24">
                 <Card>
-                    <div>
-                        <Table :columns="columnsList" :data="tableData" border disabled-hover></Table>
+                    <div class="article-list">
+                        <Table :columns="columnsList" :data="tableData" border disabled-hover ></Table>
                     </div>
                     <div class="margin-top-15" style="text-align: center">
                         <Page :total="tableShow.listCount" :current="tableShow.currentPage"
@@ -42,7 +42,7 @@
                 </Card>
             </Col>
         </Row>
-        <Modal v-model="modalSetting.show" width="1350" :styles="{top: '30px'}" @on-visible-change="doCancel">
+        <Modal v-model="modalSetting.show" width="90" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="information-circled"></Icon>
                 <span>{{formItem.aid ? '编辑' : '新增'}}文章</span>
@@ -51,24 +51,16 @@
                 <Row>
                     <Col span="18">
                     <Card>
-                        <Form :label-width="80">
+                        <Form :label-width="60">
                             <div class="article-title">
                                 <FormItem label="文章标题" :error="articleError">
                                     <Input v-model="articleTitle" @on-blur="handleArticletitleBlur" icon="android-list"/>
                                 </FormItem>
                             </div>
-                            <div class="article-link-con">
-                                <transition name="fixed-link">
-                                    <FormItem v-show="showLink" label="固定链接">
-                                    <span>
-                                        <span key="pathfixedtext">{{ fixedLink }}</span><span key="pathText" v-if="!editLink">{{ articlePath }}</span>
-                                        <Input key="pathInput" v-model="articlePath" style="display:inline-block;width:auto"  v-else/>
-                                    </span>
-                                        <span style="float:right;">
-                                        <Button :type="editPathButtonType" @click="editArticlePath">{{ editPathButtonText }}</Button>
-                                    </span>
-                                    </FormItem>
-                                </transition>
+                            <div class="article-describe">
+                                <FormItem label="描述">
+                                    <Input v-model="articleDesc" type="textarea" placeholder="为空则截取文章前300字"/>
+                                </FormItem>
                             </div>
                         </Form>
                         <div class="margin-top-20">
@@ -77,123 +69,93 @@
                     </Card>
                     </Col>
                     <Col span="6" class="padding-left-10">
-                    <Card>
-                        <p slot="title">
-                            <Icon type="paper-airplane"></Icon>
-                            发布
-                        </p>
-                        <p class="margin-top-10">
-                            <Icon type="android-time"></Icon>&nbsp;&nbsp;状&nbsp;&nbsp;&nbsp; 态：
-                            <Select size="small" style="width:90px" value="草稿">
-                                <Option v-for="item in articleStateList" :value="item.value" :key="item.value">{{ item.value }}</Option>
-                            </Select>
-                        </p>
-                        <p class="margin-top-10">
-                            <Icon type="eye"></Icon>&nbsp;&nbsp;公开度：&nbsp;<b>{{ Openness }}</b>
-                            <Button v-show="!editOpenness" size="small" @click="handleEditOpenness" type="text">修改</Button>
-                            <transition name="openness-con">
-                                <div v-show="editOpenness" class="openness-radio-con">
-                                    <RadioGroup v-model="currentOpenness" vertical>
-                                        <Radio label="公开">
-                                            公开
-                                            <Checkbox v-show="currentOpenness === '公开'" v-model="topArticle">在首页置顶这篇文章</Checkbox>
-                                        </Radio>
-                                        <Radio label="密码">
-                                            密码
-                                            <Input v-show="currentOpenness === '密码'" style="width:120px" size="small" placeholder="请输入密码"/>
-                                        </Radio>
-                                        <Radio label="私密"></Radio>
-                                    </RadioGroup>
-                                    <div>
-                                        <Button type="primary" @click="handleSaveOpenness">确认</Button>
-                                        <Button type="ghost" @click="cancelEditOpenness">取消</Button>
-                                    </div>
-                                </div>
-                            </transition>
-                        </p>
-                        <p class="margin-top-10">
-                            <Icon type="ios-calendar-outline"></Icon>&nbsp;&nbsp;
-                            <span v-if="publishTimeType === 'immediately'">立即发布</span><span v-else>定时：{{ publishTime }}</span>
-                            <Button v-show="!editPublishTime" size="small" @click="handleEditPublishTime" type="text">修改</Button>
-                            <transition name="publish-time">
-                                <div v-show="editPublishTime" class="publish-time-picker-con">
-                                    <div class="margin-top-10">
-                                        <DatePicker @on-change="setPublishTime" type="datetime" style="width:200px;" placeholder="选择日期和时间" ></DatePicker>
-                                    </div>
-                                    <div class="margin-top-10">
-                                        <Button type="primary" @click="handleSavePublishTime">确认</Button>
-                                        <Button type="ghost" @click="cancelEditPublishTime">取消</Button>
-                                    </div>
-                                </div>
-                            </transition>
-                        </p>
-                        <Row class="margin-top-20 publish-button-con">
-                            <span class="publish-button"><Button @click="handlePreview">预览</Button></span>
-                            <span class="publish-button"><Button @click="handleSaveDraft">保存草稿</Button></span>
-                            <span class="publish-button"><Button @click="handlePublish" :loading="publishLoading" icon="ios-checkmark" style="width:90px;" type="primary">发布</Button></span>
-                        </Row>
-                    </Card>
-                    <div class="margin-top-10">
-                        <Card>
-                            <p slot="title">
-                                <Icon type="navicon-round"></Icon>
-                                分类目录
-                            </p>
-                            <Tabs type="card">
-                                <TabPane label="所有分类目录">
-                                    <div class="classification-con">
-                                        <Tree :data="classificationList" @on-check-change="setClassificationInAll" show-checkbox></Tree>
-                                    </div>
-                                </TabPane>
-                                <TabPane label="常用目录">
-                                    <div class="classification-con">
-                                        <CheckboxGroup v-model="offenUsedClassSelected" @on-change="setClassificationInOffen">
-                                            <p v-for="item in offenUsedClass" :key="item.title">
-                                                <Checkbox :label="item.title">{{ item.title }}</Checkbox>
-                                            </p>
-                                        </CheckboxGroup>
-                                    </div>
-                                </TabPane>
-                            </Tabs>
-                        </Card>
-                    </div>
-                    <div class="margin-top-10">
-                        <Card>
-                            <p slot="title">
-                                <Icon type="ios-pricetags-outline"></Icon>
-                                标签
-                            </p>
-                            <Row>
-                                <Col span="18">
-                                <Select v-model="articleTagSelected" multiple @on-change="handleSelectTag" placeholder="请选择文章标签">
-                                    <Option v-for="item in articleTagList" :value="item.value" :key="item.value">{{ item.value }}</Option>
-                                </Select>
-                                </Col>
-                                <Col span="6" class="padding-left-10">
-                                <Button v-show="!addingNewTag" @click="handleAddNewTag" long type="ghost">新建</Button>
-                                </Col>
-                            </Row>
-                            <transition name="add-new-tag">
-                                <div v-show="addingNewTag" class="add-new-tag-con">
-                                    <Col span="14">
-                                    <Input v-model="newTagName" placeholder="请输入标签名" />
+                        <div>
+                            <Card>
+                                <p slot="title">
+                                    <Icon type="navicon-round"></Icon>
+                                    分类目录
+                                </p>
+                                <Tabs type="card">
+                                    <TabPane label="所有分类目录">
+                                        <div class="classification-con">
+                                            <Tree :data="dirList" ref="tree"></Tree>
+                                        </div>
+                                    </TabPane>
+                                </Tabs>
+                            </Card>
+                        </div>
+                        <div class="margin-top-10">
+                            <Card>
+                                <p slot="title">
+                                    <Icon type="ios-pricetags-outline"></Icon>
+                                    标签
+                                </p>
+                                <Row>
+                                    <Col span="18">
+                                    <Select v-model="articleTagSelected" multiple @on-change="handleSelectTag" placeholder="请选择文章标签">
+                                        <Option v-for="item in tagList" :value="item.tid" :key="item.tid">{{ item.value }}</Option>
+                                    </Select>
                                     </Col>
-                                    <Col span="5" class="padding-left-10">
-                                    <Button @click="createNewTag" long type="primary">确定</Button>
+                                    <Col span="6" class="padding-left-10">
+                                    <Button v-show="!addingNewTag" @click="handleAddNewTag" long type="ghost">新建</Button>
                                     </Col>
-                                    <Col span="5" class="padding-left-10">
-                                    <Button @click="cancelCreateNewTag" long type="ghost">取消</Button>
-                                    </Col>
-                                </div>
-                            </transition>
-                        </Card>
-                    </div>
+                                </Row>
+                                <transition name="add-new-tag">
+                                    <div v-show="addingNewTag" class="add-new-tag-con">
+                                        <Col span="14">
+                                        <Input v-model="newTagName" placeholder="请输入标签名" />
+                                        </Col>
+                                        <Col span="5" class="padding-left-10">
+                                        <Button @click="createNewTag" long type="primary">确定</Button>
+                                        </Col>
+                                        <Col span="5" class="padding-left-10">
+                                        <Button @click="cancelCreateNewTag" long type="ghost">取消</Button>
+                                        </Col>
+                                    </div>
+                                </transition>
+                            </Card>
+                        </div>
+                        <div class="margin-top-10">
+                            <Card>
+                                <p slot="title">
+                                    <Icon type="key"></Icon>
+                                    关键词
+                                </p>
+                                <Input v-model="KeyName" placeholder="请输入关键词，多个以顿号分割" />
+                            </Card>
+                        </div>
+                        <div class="margin-top-10">
+                            <Card>
+                                <p slot="title">
+                                    <Icon type="paper-airplane"></Icon>
+                                    发布
+                                </p>
+                                <p class="margin-top-10">
+                                    <Icon type="android-time"></Icon>&nbsp;&nbsp;状&nbsp;&nbsp;&nbsp; 态：
+                                    <Select size="small" style="width:90px" v-model="articleState">
+                                        <Option v-for="item in articleStateList" :value="item.value" :key="item.value">{{ item.lable }}</Option>
+                                    </Select>
+                                </p>
+                                <p class="margin-top-10">
+                                    <Checkbox v-show="currentOpenness === '公开'" v-model="isTop">在首页置顶这篇文章</Checkbox>
+                                </p>
+                                <p class="margin-top-10">
+                                    <Checkbox v-show="currentOpenness === '公开'" v-model="isOrigin">是否为原创</Checkbox>
+                                </p>
+                                <Row class="margin-top-20 publish-button-con">
+                                <span class="publish-button">
+                                    <Button @click="handlePreview">预览</Button>
+                                </span>
+                                    <span class="publish-button">
+                                    <Button @click="handlePublish" :loading="publishLoading" icon="ios-checkmark" style="width:90px;" type="primary">发布</Button>
+                                </span>
+                                </Row>
+                            </Card>
+                        </div>
                     </Col>
                 </Row>
             </div>
             <div slot="footer">
-                <Button type="text" @click="cancel" style="margin-right: 8px">取消</Button>
-                <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
             </div>
         </Modal>
     </div>
@@ -214,13 +176,73 @@
             },
             on: {
                 'click': () => {
-                    vm.formItem.aid = currentRow.aid;
-                    vm.formItem.article_title = currentRow.article_title;
-                    vm.formItem.fid = currentRow.fid;
-                    //vm.formItem.url = currentRow.url.slice(6);
-                    vm.formItem.sort = currentRow.sort;
-                    vm.modalSetting.show = true;
-                    vm.modalSetting.index = index;
+                    axios.get('Article/articleInfo', {
+                        params: {
+                            id: currentRow.aid
+                        }
+                    }).then(function (response) {
+                        let res = response.data;
+                        if (res.code === 1) {
+                            vm.formItem.aid = res.data.aid;
+                            vm.articleTitle = res.data.article_title;
+                            vm.articleDesc = res.data.descr;
+                            vm.KeyName = res.data.keyw;
+                            vm.isTop = res.data.is_top;
+                            vm.isOrigin = res.data.is_origin;
+                            vm.showLink = true;
+                            vm.articleState = res.data.is_show;
+                            vm.modalSetting.show = true;
+                            vm.modalSetting.index = index;
+                            tinymce.get('articleEditor').setContent(res.data.body);
+                        } else {
+                            if (res.code === -14) {
+                                vm.$store.commit('logout', vm);
+                                vm.$router.push({
+                                    name: 'login'
+                                });
+                            } else {
+                                vm.$Message.error(res.msg);
+                            }
+                        }
+                    });
+                    axios.get('ArticleDir/getDir', {
+                        params: {
+                            id: currentRow.aid
+                        }
+                    }).then(function (response) {
+                        let res = response.data;
+                        if (res.code === 1) {
+                            vm.dirList = res.data.list;
+                        } else {
+                            if (res.code === -14) {
+                                vm.$store.commit('logout', vm);
+                                vm.$router.push({
+                                    name: 'login'
+                                });
+                            } else {
+                                vm.$Message.error(res.msg);
+                            }
+                        }
+                    });
+                    axios.get('Tag/getSelectedTag', {
+                        params: {
+                            id: currentRow.aid
+                        }
+                    }).then(function (response) {
+                        let res = response.data;
+                        if (res.code === 1) {
+                            vm.articleTagSelected = res.data;
+                        } else {
+                            if (res.code === -14) {
+                                vm.$store.commit('logout', vm);
+                                vm.$router.push({
+                                    name: 'login'
+                                });
+                            } else {
+                                vm.$Message.error(res.msg);
+                            }
+                        }
+                    });
                 }
             }
         }, '编辑');
@@ -229,14 +251,14 @@
         return h('Poptip', {
             props: {
                 confirm: true,
-                title: '您确定要删除这条数据吗? ',
+                title: '您确定要删除这篇文章吗? ',
                 transfer: true
             },
             on: {
                 'on-ok': () => {
-                    axios.get('Log/del', {
+                    axios.get('Article/del', {
                         params: {
-                            id: currentRow.id
+                            id: currentRow.aid
                         }
                     }).then(function (response) {
                         currentRow.loading = false;
@@ -272,26 +294,29 @@
                 articleTitle: '',
                 articleError: '',
                 showLink: false,
+                articleDesc: '',
+                KeyName: '',
                 fixedLink: '',
                 articlePath: '',
                 articlePathHasEdited: false,
                 editLink: false,
                 editPathButtonType: 'ghost',
                 editPathButtonText: '编辑',
-                articleStateList: [{value: '草稿'}, {value: '等待复审'}],
+                articleStateList: [{lable: '公开', value: 1}, {lable: '隐藏', value: 0}],
+                articleState: '',
                 editOpenness: false,
                 Openness: '公开',
                 currentOpenness: '公开',
-                topArticle: false,
+                isTop: true,
+                isOrigin: true,
                 publishTime: '',
                 publishTimeType: 'immediately',
                 editPublishTime: false, // 是否正在编辑发布时间
                 articleTagSelected: [], // 文章选中的标签
                 articleTagList: [], // 所有标签列表
-                classificationList: [],
+                dirList: [],
+                tagList: [],
                 classificationSelected: [], // 在所有分类目录中选中的目录数组
-                offenUsedClass: [],
-                offenUsedClassSelected: [], // 常用目录选中的目录
                 classificationFinalSelected: [], // 最后实际选择的目录
                 publishLoading: false,
                 addingNewTag: false, // 添加新标签
@@ -313,7 +338,8 @@
                     {
                         title: '标题',
                         align: 'center',
-                        key: 'article_title'
+                        key: 'article_title',
+                        ellipsis: true
                     },
                     {
                         title: '作者',
@@ -331,31 +357,31 @@
                         title: '原创',
                         align: 'center',
                         key: 'is_origin',
-                        width: 90
+                        width: 60
                     },
                     {
                         title: '显示',
                         align: 'center',
                         key: 'is_show',
-                        width: 90
+                        width: 60
                     },
                     {
                         title: '置顶',
                         align: 'center',
                         key: 'is_top',
-                        width: 90
+                        width: 60
                     },
                     {
                         title: '发布时间',
                         align: 'center',
                         key: 'push_time',
-                        width: 180
+                        width: 150
                     },
                     {
                         title: '操作',
                         align: 'center',
                         key: 'handle',
-                        width: 200,
+                        width: 170,
                         handle: ['delete']
                     }
                 ],
@@ -395,6 +421,8 @@
         created () {
             this.init();
             this.getList();
+            this.getDirList();
+            this.getTagList();
         },
         methods: {
             init () {
@@ -596,39 +624,70 @@
                     }
                 });
             },
+            getDirList () {
+                let vm = this;
+                axios.get('ArticleDir/getDir', {
+                    params: {
+                    }
+                }).then(function (response) {
+                    let res = response.data;
+                    if (res.code === 1) {
+                        vm.dirList = res.data.list;
+                    } else {
+                        if (res.code === -14) {
+                            vm.$store.commit('logout', vm);
+                            vm.$router.push({
+                                name: 'login'
+                            });
+                        } else {
+                            vm.$Message.error(res.msg);
+                        }
+                    }
+                });
+            },
+            getTagList () {
+                let vm = this;
+                axios.get('Tag/lists', {
+                    params: {
+                    }
+                }).then(function (response) {
+                    let res = response.data;
+                    if (res.code === 1) {
+                        vm.tagList = res.data.list;
+                    } else {
+                        if (res.code === -14) {
+                            vm.$store.commit('logout', vm);
+                            vm.$router.push({
+                                name: 'login'
+                            });
+                        } else {
+                            vm.$Message.error(res.msg);
+                        }
+                    }
+                });
+            },
             addArticle () {
+                let vm = this;
+                vm.formItem.aid = '';
+                vm.articleTitle = '';
+                vm.articleDesc = '';
+                vm.KeyName = '';
+                vm.isTop = false;
+                vm.isOrigin = true;
+                vm.showLink = true;
+                vm.articleState = 1;
+                vm.articleTagSelected = [];
+                vm.getDirList();
+                tinymce.get('articleEditor').setContent('');
                 this.modalSetting.show = true;
             },
             doCancel (data) {
                 if (!data) {
                     this.formItem.id = 0;
-                    this.$refs['myForm'].resetFields();
+                    //this.$refs['myForm'].resetFields();
                     this.modalSetting.loading = false;
                     this.modalSetting.index = 0;
                 }
-            },
-            submit () {
-                let self = this;
-                this.$refs['myForm'].validate((valid) => {
-                    if (valid) {
-                        self.modalSetting.loading = true;
-                        let target = '';
-                        if (this.formItem.id === 0) {
-                            target = 'User/add1111';
-                        } else {
-                            target = 'User/edit';
-                        }
-                        axios.post(target, this.formItem).then(function (response) {
-                            if (response.data.code === 1) {
-                                self.$Message.success(response.data.msg);
-                            } else {
-                                self.$Message.error(response.data.msg);
-                            }
-                            self.getList();
-                            self.cancel();
-                        });
-                    }
-                });
             },
             cancel () {
                 this.modalSetting.show = false;
@@ -643,7 +702,7 @@
                         let year = date.getFullYear();
                         let month = date.getMonth() + 1;
                         let day = date.getDate();
-                        this.fixedLink = window.location.host + '/' + year + '/' + month + '/' + day + '/';
+                        this.fixedLink = window.location.host + '-' + year + '-' + month + '-' + day + '-';
                         this.articlePath = this.articleTitle;
                         this.articlePathHasEdited = true;
                         this.showLink = true;
@@ -669,39 +728,33 @@
                 this.currentOpenness = this.Openness;
                 this.editOpenness = false;
             },
-            handleEditPublishTime () {
-                this.editPublishTime = !this.editPublishTime;
-            },
-            handleSavePublishTime () {
-                this.publishTimeType = 'timing';
-                this.editPublishTime = false;
-            },
-            cancelEditPublishTime () {
-                this.publishTimeType = 'immediately';
-                this.editPublishTime = false;
-            },
-            setPublishTime (datetime) {
-                this.publishTime = datetime;
-            },
-            setClassificationInAll (selectedArray) {
-                this.classificationFinalSelected = selectedArray.map(item => {
-                    return item.title;
-                });
-                localStorage.classificationSelected = JSON.stringify(this.classificationFinalSelected); // 本地存储所选目录列表
-            },
-            setClassificationInOffen (selectedArray) {
-                this.classificationFinalSelected = selectedArray;
-            },
             handleAddNewTag () {
                 this.addingNewTag = !this.addingNewTag;
             },
             createNewTag () {
                 if (this.newTagName.length !== 0) {
-                    this.articleTagList.push({value: this.newTagName});
-                    this.addingNewTag = false;
-                    setTimeout(() => {
-                        this.newTagName = '';
-                    }, 200);
+                    let vm = this;
+                    axios.post('Tag/addTag', {
+                        tag_name: this.newTagName
+                    }).then(function (response) {
+                        let res = response.data;
+                        if (res.code === 1) {
+                            vm.tagList.push({
+                                value: vm.newTagName,
+                                tid: res.data.tid
+                            });
+                            vm.addingNewTag = false;
+                        } else {
+                            if (res.code === -14) {
+                                vm.$store.commit('logout', vm);
+                                vm.$router.push({
+                                    name: 'login'
+                                });
+                            } else {
+                                vm.$Message.error(res.msg);
+                            }
+                        }
+                    });
                 } else {
                     this.$Message.error('请输入标签名');
                 }
@@ -738,21 +791,47 @@
                     });
                 }
             },
-            handleSaveDraft () {
-                if (!this.canPublish()) {
-                    //
-                }
-            },
             handlePublish () {
+                let vm = this;
                 if (this.canPublish()) {
                     this.publishLoading = true;
-                    setTimeout(() => {
-                        this.publishLoading = false;
-                        this.$Notice.success({
-                            title: '保存成功',
-                            desc: '文章《' + this.articleTitle + '》保存成功'
-                        });
-                    }, 1000);
+                    axios.post('Article/push', {
+                        id: vm.formItem.aid,
+                        title: vm.articleTitle,
+                        desc: vm.articleDesc,
+                        body: tinymce.get('articleEditor').getContent(),
+                        category_id: vm.$refs.tree.getSelectedNodes()[0]['cid'],
+                        tags: vm.articleTagSelected,
+                        keyw: vm.KeyName,
+                        is_show: vm.articleState,
+                        is_top: vm.isTop,
+                        is_origin: vm.isOrigin
+                    }).then(function (response) {
+                        let res = response.data;
+                        vm.publishLoading = false;
+                        if (res.code === 1) {
+                            vm.$Notice.success({
+                                title: '保存成功',
+                                desc: '文章《' + vm.articleTitle + '》保存成功'
+                            });
+                            vm.modalSetting.show = false;
+                        } else {
+                            vm.$Notice.error({
+                                title: '保存失败',
+                                desc: '文章《' + vm.articleTitle + '》保存失败'
+                            });
+                            if (res.code === -14) {
+                                vm.$store.commit('logout', vm);
+                                vm.$router.push({
+                                    name: 'login'
+                                });
+                            } else {
+                                vm.$Message.error(res.msg);
+                            }
+                        }
+
+                        vm.getList();
+                    });
                 }
             },
             handleSelectTag () {
@@ -767,98 +846,11 @@
             }
         },
         mounted () {
-            this.articleTagList = [
-                {value: 'vue'},
-                {value: 'iview'},
-                {value: 'ES6'},
-                {value: 'webpack'},
-                {value: 'babel'},
-                {value: 'eslint'}
-            ];
-            this.classificationList = [
-                {
-                    title: 'Vue实例',
-                    expand: true,
-                    children: [
-                        {
-                            title: '数据与方法',
-                            expand: true
-                        },
-                        {
-                            title: '生命周期',
-                            expand: true
-                        }
-                    ]
-                },
-                {
-                    title: 'Class与Style绑定',
-                    expand: true,
-                    children: [
-                        {
-                            title: '绑定HTML class',
-                            expand: true,
-                            children: [
-                                {
-                                    title: '对象语法',
-                                    expand: true
-                                },
-                                {
-                                    title: '数组语法',
-                                    expand: true
-                                },
-                                {
-                                    title: '用在组件上',
-                                    expand: true
-                                }
-                            ]
-                        },
-                        {
-                            title: '生命周期',
-                            expand: true
-                        }
-                    ]
-                },
-                {
-                    title: '模板语法',
-                    expand: true,
-                    children: [
-                        {
-                            title: '插值',
-                            expand: true
-                        },
-                        {
-                            title: '指令',
-                            expand: true
-                        },
-                        {
-                            title: '缩写',
-                            expand: true
-                        }
-                    ]
-                }
-            ];
-            this.offenUsedClass = [
-                {
-                    title: 'vue实例'
-                },
-                {
-                    title: '生命周期'
-                },
-                {
-                    title: '模板语法'
-                },
-                {
-                    title: '插值'
-                },
-                {
-                    title: '缩写'
-                }
-            ];
             tinymce.init({
                 selector: '#articleEditor',
                 branding: false,
                 elementpath: false,
-                height: 600,
+                height: 525,
                 language: 'zh_CN.GB2312',
                 menubar: 'edit insert view format table tools',
                 theme: 'modern',
