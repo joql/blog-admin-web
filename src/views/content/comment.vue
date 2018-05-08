@@ -27,7 +27,7 @@
             <Col span="24">
             <Card>
                 <div>
-                    <Table :columns="columnsList" :data="tableData" border disabled-hover></Table>
+                    <Table :columns="columnsList" :data="tableData" border disabled-hover ></Table>
                 </div>
                 <div class="margin-top-15" style="text-align: center">
                     <Page :total="tableShow.listCount" :current="tableShow.currentPage"
@@ -101,9 +101,9 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('Auth/del', {
+                    axios.get('Comment/del', {
                         params: {
-                            id: currentRow.id
+                            cmid: currentRow.comment_id
                         }
                     }).then(function (response) {
                         currentRow.loading = false;
@@ -131,7 +131,7 @@
     };
 
     export default {
-        name: 'system_auth',
+        name: 'comment',
         data () {
             return {
                 ruleList: [],
@@ -161,6 +161,7 @@
                         width: 116
                     },
                     {
+                        type: 'html',
                         title: '评论内容',
                         align: 'center',
                         key: 'comment_content'
@@ -234,14 +235,14 @@
                                 props: {
                                     'true-value': 1,
                                     'false-value': 0,
-                                    value: currentRowData.status
+                                    value: currentRowData.comment_state
                                 },
                                 on: {
                                     'on-change': function (status) {
-                                        axios.get('Auth/changeStatus', {
+                                        axios.get('Comment/changeStatus', {
                                             params: {
                                                 status: status,
-                                                id: currentRowData.id
+                                                cmid: currentRowData.comment_id
                                             }
                                         }).then(function (response) {
                                             let res = response.data;
@@ -358,7 +359,7 @@
             },
             getList () {
                 let vm = this;
-                axios.get('Auth/index', {
+                axios.get('Comment/lists', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
